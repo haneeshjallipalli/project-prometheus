@@ -1,0 +1,76 @@
+version: '3.9'
+
+networks:
+  lab:
+    driver: bridge
+
+services:
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    container_name: prometheus
+    hostname: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus:/etc/prometheus
+    networks:
+      - lab
+
+  grafana:
+    image: grafana/grafana:11.6.0
+    container_name: grafana
+    hostname: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - lab
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: alertmanager
+    hostname: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager:/etc/alertmanager
+    networks:
+      - lab
+
+  node-exporter:
+    image: prom/node-exporter:v1.9.1
+    container_name: node-exporter
+    hostname: node-exporter
+    network_mode: host
+    pid: host
+    volumes:
+      - /:/host:ro,rslave
+    command:
+      - '--path.rootfs=/host'
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    container_name: cadvisor
+    hostname: cadvisor
+    networks:
+      - lab
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - "8080:8080"
+
+  cpu-exporter:
+    build:
+      context: ./docker/cpu-exporter
+    container_name: cpu-exporter
+    hostname: cpu-exporter
+    networks:
+      - lab
+    pid: host
+    environment:
+      - LC_ALL=C
+    ports:
+      - "8000:8000"
