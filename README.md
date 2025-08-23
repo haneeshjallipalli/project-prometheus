@@ -10,3 +10,9 @@ Contents summary:
 
 Add prometheus as datasource in Grafana:
 data source url: http://prometheus:9090
+
+commands to rebuild and restart all services:
+```
+docker-compose down --rmi local
+docker-compose up -d
+```
