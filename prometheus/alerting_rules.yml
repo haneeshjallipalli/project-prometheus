@@ -1,19 +1,41 @@
 groups:
-- name: demo-service-alerts
-  rules:
-  - alert: container_cpu_usage_high
-    expr: |
-      sum by (path, instance, job) (rate(container_cpu_user_seconds_total{}[1m])) / sum by (path, instance, job) (rate(container_cpu_user_seconds_total{}[1m])) * 100 > 0.5
-    for: 30s
-    labels:
-      severity: critical
-    annotations:
-      description: "The 5xx error rate for path {{$labels.path}} on {{$labels.instance}} is {{$value}}%."
-  - alert: container_memory_usage_high
-    expr: |
-      sum by (path, instance, job) (rate(container_memory_usage_bytes{}[1m])) / sum by (path, instance, job) (rate(container_memory_total_inactive_file_bytes{}[1m])) * 0.05 > 1500
-    for: 30s
-    labels:
-      severity: critical
-    annotations:
-      description: "The 5xx error rate for path {{$labels.path}} on {{$labels.instance}} is {{$value}}%."
+  - name: demo-service-alerts
+    rules:
+      - alert: container_cpu_usage_high
+        expr: >
+          sum by (path, instance, job)
+          (rate(container_cpu_user_seconds_total{}[1m])) / sum by (path,
+          instance, job) (rate(container_cpu_user_seconds_total{}[1m])) * 100 >
+          0.5
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          description: The 5xx error rate for path {{$labels.path}} on
+            {{$labels.instance}} is {{$value}}%.
+      - alert: container_memory_usage_high
+        expr: >
+          sum by (path, instance, job) (rate(container_memory_usage_bytes{}[1m])) /
+          sum by (path, instance, job)
+          (rate(container_memory_total_inactive_file_bytes{}[1m])) * 0.05 > 1500
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          description: The 5xx error rate for path {{$labels.path}} on
+            {{$labels.instance}} is {{$value}}%.
+      - alert: HighErrorRate
+        expr: increase(demo_errors_total[1m]) > 5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: High error rate detected in demo app
+      - alert: HighLatency
+        expr: histogram_quantile(0.95,
+          sum(rate(demo_request_latency_seconds_bucket[1m])) by (le)) > 1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: High request latency detected in demo app
