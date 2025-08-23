@@ -74,3 +74,12 @@ services:
       - LC_ALL=C
     ports:
       - "8000:8000"
+  demo-service:
+      build:
+        context: ./docker/demo-service
+      container_name: demo-service
+      hostname: d1
+      networks:
+        - lab
+      ports:
+        - "8081:8080"
