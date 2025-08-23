@@ -9,3 +9,11 @@ groups:
       severity: critical
     annotations:
       description: "The 5xx error rate for path {{$labels.path}} on {{$labels.instance}} is {{$value}}%."
+  - alert: container_memory_usage_high
+    expr: |
+      sum by (path, instance, job) (rate(container_memory_usage_bytes{}[1m])) / sum by (path, instance, job) (rate(container_memory_total_inactive_file_bytes{}[1m])) * 0.05 > 1500
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      description: "The 5xx error rate for path {{$labels.path}} on {{$labels.instance}} is {{$value}}%."
